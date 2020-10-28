@@ -34,11 +34,11 @@ parentName = order.customer.name
 products = Product.objects.filter(category="Outdoor")
 
 #(9)***Order/Sort Objects by id
-leastToGreatest = Product.objects.all().order_by(id)
-greatestToLeast = Product.objects.all().order_by(-id)
+leastToGreatest = Product.objects.all().order_by('id')
+greatestToLeast = Product.objects.all().order_by('-id'')
 
 #(10) Returns all products with tag of "Sports": (Query Many to Many Fields)
-productsFiltered = Product.objects.filter(tags_name = "Sports")
+productsFiltered = Product.objects.filter(tags__name = "Sports")
 
 '''
 (11)Bonus
