@@ -1,3 +1,12 @@
+#queryset = Class.objects.all()
+                        # .get()
+                        # .filter()
+                        # .exclude()
+                        # .first()
+                        # .last()
+#parent.childmodel_set.all()
+#==================================
+
 #(1)***Return all customer from customer table
 customers = Customer.objects.all()
 
