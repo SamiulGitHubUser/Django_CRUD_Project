@@ -6,12 +6,14 @@ from accounts.models import *
 
 def home(request):
     #return HttpResponse('Home')
-    return render(request, 'accounts/dashboard.html')
+    orders = Order.objects.all()
+    customers = Customer.objects.all()
+    context = {'orders':orders, 'customers':customers}
+    return render(request, 'accounts/dashboard.html', context)
 
 def products(request):
     #return HttpResponse('Products')
     products = Product.objects.all()
-
     return render(request, 'accounts/products.html', {'products': products})
 
 def customers(request):
