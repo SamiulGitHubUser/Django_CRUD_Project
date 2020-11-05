@@ -8,6 +8,16 @@ from .filters import OrderFilter
 
 # Create your views here.
 
+#Login
+def loginPage(request):
+    context = {}
+    return  render(request, 'accounts/login.html', context)
+#Register
+def registerPage(request):
+    context = {}
+    return  render(request, 'accounts/register.html', context)
+
+#Home
 def home(request):
     #return HttpResponse('Home')
     orders = Order.objects.all()
