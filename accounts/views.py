@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.forms import inlineformset_factory
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 #from django.contrib.auth.forms import UserCreationForm
 
 from accounts.models import *
@@ -10,37 +11,48 @@ from accounts.forms import OrderForm, CreateUserForm
 from .filters import OrderFilter
 
 # Create your views here.
-#Register
+#Register View
 def registerPage(request):
-    form = CreateUserForm()
+    if request.user.is_authenticated: #this is very bad way to use is_authenticated
+        return redirect('home')
+    else:
+        form = CreateUserForm()
+        if request.method == 'POST':
+            form = CreateUserForm(request.POST)
+            if form.is_valid():
+                form.save()
+                user = form.cleaned_data.get('username')
+                messages.success(request, "Account was created for "+ user)
+                return redirect('login')
 
-    if request.method == 'POST':
-        form = CreateUserForm(request.POST)
-        if form.is_valid():
-            form.save()
-            user = form.cleaned_data.get('username')
-            messages.success(request, "Account was created for "+ user)
-            return redirect('login')
+        context = {'form':form}
+        return  render(request, 'accounts/register.html', context)
 
-    context = {'form':form}
-    return  render(request, 'accounts/register.html', context)
-
-#Login
+#Login View
 def loginPage(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = authenticate(request, username=username, password=password)
-        
-        if user is not None:
-            login(request, user)
-            return redirect('home')
-        else:
-            messages.info(request, 'Username or Password is incorrect!')
-    context = {}
-    return  render(request, 'accounts/login.html', context)
+    if request.user.is_authenticated: #this is very bad way to use is_authenticated
+        return redirect('home')
+    else:
+        if request.method == 'POST':
+            username = request.POST.get('username')
+            password = request.POST.get('password')
+            user = authenticate(request, username=username, password=password)
 
-#Home
+            if user is not None:
+                login(request, user)
+                return redirect('home')
+            else:
+                messages.info(request, 'Username or Password is incorrect!')
+        context = {}
+        return  render(request, 'accounts/login.html', context)
+
+#logout View
+def logoutUser(request):
+    logout(request)
+    return redirect('login')
+
+#Home View
+@login_required(login_url='login')
 def home(request):
     #return HttpResponse('Home')
     orders = Order.objects.all()
@@ -55,6 +67,9 @@ def home(request):
 
     return render(request, 'accounts/dashboard.html', context)
 
+
+#Product View
+@login_required(login_url='login')
 def products(request):
     #return HttpResponse('Products')
     products = Product.objects.all()
@@ -73,6 +88,9 @@ def customers(request, pk_test):
     'myFilter':myFilter}
     return render(request, 'accounts/customers.html', context)
 
+
+#Customer View
+@login_required(login_url='login')
 def createOrder(request, pk):
     #inlineformset_factory(Parent_Model, Child_Model)
     OrderFormSet = inlineformset_factory(Customer, Order, fields=('product', 'status'))
@@ -91,6 +109,9 @@ def createOrder(request, pk):
     context = {'formset':formset}
     return render(request, 'accounts/order_form.html', context)
 
+
+#Update View
+@login_required(login_url='login')
 def updateOrder(request, pk):
 
     order = Order.objects.get(id=pk)
@@ -106,6 +127,9 @@ def updateOrder(request, pk):
     context = {'form':form}
     return render(request, 'accounts/order_form.html', context)
 
+
+#Delete View
+@login_required(login_url='login')
 def deleteOrder(request, pk):
     order = Order.objects.get(id=pk)
     if request.method == 'POST':
