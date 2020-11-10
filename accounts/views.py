@@ -25,6 +25,9 @@ def registerPage(request):
 
             group = Group.objects.get(name='customer')
             user.groups.add(group)
+            Customer.objects.create(
+                user = user,
+                )
 
             messages.success(request, "Account was created for "+ username)
             return redirect('login')
@@ -72,17 +75,30 @@ def home(request):
 
 
 #User View
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['customer'])
 def userPage(request):
-    context = {}
+    orders = request.user.customer.order_set.all()
+    total_orders = orders.count()
+    delivered =  orders.filter(status='Delivered').count()
+    pending =  orders.filter(status='Pending').count()
+
+    context = { 'orders':orders, 'customers':customers,
+                'total_orders':total_orders, 'delivered':delivered,
+                'pending':pending}
     return render(request, 'accounts/user.html', context)
 
 #Product View
 @login_required(login_url='login')
+@allowed_users(allowed_roles=['admin'])
 def products(request):
     #return HttpResponse('Products')
     products = Product.objects.all()
     return render(request, 'accounts/products.html', {'products': products})
 
+
+#Customer View
+@login_required(login_url='login')
 def customers(request, pk_test):
     #return HttpResponse('Customers')
     customer = Customer.objects.get(id=pk_test)
