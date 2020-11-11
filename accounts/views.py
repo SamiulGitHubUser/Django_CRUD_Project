@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 #from django.contrib.auth.forms import UserCreationForm
 from accounts.models import *
-from accounts.forms import OrderForm, CreateUserForm
+from accounts.forms import OrderForm, CreateUserForm, CustomerForm
 from .filters import OrderFilter
 from .decorators import unauthenticated_user, allowed_users, admin_only
 
@@ -73,6 +73,21 @@ def home(request):
 
     return render(request, 'accounts/dashboard.html', context)
 
+
+
+#Account settings page view
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['customer'])
+def accountSettings(request):
+    customer = request.user.customer
+    form =CustomerForm(instance=customer)
+    if request.method == 'POST':
+        form =CustomerForm(request.POST, request.FILES ,instance=customer)
+        if form.is_valid():
+            form.save()
+
+    context = {'form':form}
+    return render(request, 'accounts/account_settings.html', context)
 
 #User View
 @login_required(login_url='login')
